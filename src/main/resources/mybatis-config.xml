@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!--引用外部的数据库属性-->
+    <properties resource="jdbc.properties"/>
+
+    <settings>
+        <!-- 允许 JDBC 支持自动生成主键，需要驱动兼容。 如果设置为 true 则这个设置强制使用自动生成主键 -->
+        <setting name="useGeneratedKeys" value="true"/>
+        <!-- 是否开启自动驼峰命名规则映射，例如数据库的列名为user_name可以对应到实体的username -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+
+    <typeAliases>
+        <!--在mapper文件中使用别名,package的形式默认是类名首字母小写-->
+        <package name="com.changyue.j2eefinal.model"/>
+    </typeAliases>
+
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <property name="reasonable" value="true"/>
+        </plugin>
+    </plugins>
+
+</configuration>

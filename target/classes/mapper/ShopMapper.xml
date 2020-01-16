@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.changyue.j2eefinal.dao.ShopMapper">
+    <resultMap id="BaseResultMap" type="com.changyue.j2eefinal.model.ShopDO">
+        <id column="shop_id" jdbcType="INTEGER" property="shopId"/>
+        <result column="shop_name" jdbcType="VARCHAR" property="shopName"/>
+        <result column="shop_desc" jdbcType="VARCHAR" property="shopDesc"/>
+        <result column="shop_addr" jdbcType="VARCHAR" property="shopAddr"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="shop_img" jdbcType="VARCHAR" property="shopImg"/>
+        <result column="priority" jdbcType="INTEGER" property="priority"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="last_edit_time" jdbcType="TIMESTAMP" property="lastEditTime"/>
+        <result column="enable_status" jdbcType="INTEGER" property="enableStatus"/>
+
+        <association property="shopCategoryDO" javaType="com.changyue.j2eefinal.model.ShopCategoryDO">
+            <id column="shop_category_id" jdbcType="INTEGER" property="shopCategoryId"/>
+            <result column="shop_category_name" jdbcType="VARCHAR" property="shopCategoryName"/>
+        </association>
+        <association property="userDO" javaType="com.changyue.j2eefinal.model.UserDO">
+            <id column="user_id" jdbcType="INTEGER" property="userId"/>
+            <result column="name" jdbcType="VARCHAR" property="name"/>
+        </association>
+        <association property="areaDO" javaType="com.changyue.j2eefinal.model.AreaDO">
+            <id column="area_id" jdbcType="INTEGER" property="areaId"/>
+            <result column="area_name" jdbcType="VARCHAR" property="areaName"/>
+        </association>
+
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        shop_id, owner_id, area_id, shop_category_id, shop_name, shop_desc,
+    shop_addr, phone, shop_img, priority, create_time, last_edit_time, enable_status
+    </sql>
+
+    <sql id="Select_base_list">
+        s.shop_id,
+       s.priority,
+       u.user_id,
+       u.name,
+       a.area_id,
+       a.area_name,
+       sc.shop_category_id,
+       sc.shop_category_name,
+       s.shop_name,
+       s.shop_desc,
+       s.shop_addr,
+       s.phone,
+       s.shop_img,
+       s.create_time,
+       s.last_edit_time,
+       s.enable_status
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_shop
+        where shop_id = #{shopId,jdbcType=INTEGER}
+    </select>
+
+    <select id="selectShopList" parameterType="com.changyue.j2eefinal.model.ShopDO" resultMap="BaseResultMap">
+        select
+        <include refid="Select_base_list"/>
+        from tb_shop s,tb_area a,tb_shop_category sc ,tb_user u
+        <where>
+            s.area_id = a.area_id and s.shop_category_id = sc.shop_category_id and s.owner_id = u.user_id
+            <if test="shopDO.userDO != null and shopDO.userDO.userId">
+                and s.owner_id = #{shopDO.userDO.userId,jdbcType=INTEGER}
+            </if>
+            <if test="shopDO.areaDO != null and shopDO.areaDo.areaId != null">
+                and s.area_id = #{shopDO.areaDO.areaId,jdbcType=INTEGER}
+            </if>
+            <if test="shopDO.shopCategoryDO != null and shopDO.shopCategoryDO.shopCategoryId != null">
+                and s.shop_category_id = #{shopDO.shopCategoryDO.shopCategoryId,jdbcType=INTEGER}
+            </if>
+            <if test="shopDO.shopName != null and shopDO.shopName != ''">
+                and s.shop_name like '%${shopDO.shopName}%'
+            </if>
+            <if test="shopDO.shopDesc != null and shopDO.shopDesc != ''">
+                and s.shop_desc = #{shopDO.shopDesc,jdbcType=VARCHAR}
+            </if>
+            <if test="shopDO.shopAddr != null and shopDO.shopAddr != ''">
+                and s.shop_addr like '%${shopDO.shopAddr}%'
+            </if>
+            <if test="shopDO.phone != null and shopDO.phone != ''">
+                and s.phone like '%${shopDO.phone}%'
+            </if>
+            <if test="shopDO.priority != null">
+                and s.priority = #{shopDO.priority,jdbcType=INTEGER}
+            </if>
+            <if test="shopDO.createTime != null">
+                and s.create_time = #{shopDO.createTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="shopDO.lastEditTime != null">
+                and s.last_edit_time = #{shopDO.lastEditTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="shopDO.enableStatus != null">
+                and s.enable_status = #{shopDO.enableStatus,jdbcType=INTEGER}
+            </if>
+        </where>
+        order by priority desc
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete
+        from tb_shop
+        where shop_id = #{shopId,jdbcType=INTEGER}
+    </delete>
+
+    <insert id="insertSelective" parameterType="com.changyue.j2eefinal.model.ShopDO">
+        insert into tb_shop (shop_id, owner_id, area_id,
+                             shop_category_id, shop_name,
+                             shop_desc, shop_addr, phone,
+                             shop_img, priority, create_time,
+                             last_edit_time, enable_status)
+        values (#{shopId,jdbcType=INTEGER}, #{userDO.userId,jdbcType=INTEGER}, #{areaDO.areaId,jdbcType=INTEGER},
+                #{shopCategoryDO.shopCategoryId,jdbcType=INTEGER},
+                #{shopName,jdbcType=VARCHAR},
+                #{shopDesc,jdbcType=VARCHAR}, #{shopAddr,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR},
+                #{shopImg,jdbcType=VARCHAR}, #{priority,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP},
+                #{lastEditTime,jdbcType=TIMESTAMP}, #{enableStatus,jdbcType=INTEGER})
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.changyue.j2eefinal.model.ShopDO">
+        update tb_shop
+        <set>
+            <if test="userDO != null and userDO.userId">
+                owner_id = #{userDO.userId,jdbcType=INTEGER},
+            </if>
+            <if test="areaDO!=null and areaDO.areaId != null">
+                area_id = #{areaDO.areaId,jdbcType=INTEGER},
+            </if>
+            <if test="shopCategoryDO!=null and shopCategoryDO.shopCategoryId != null">
+                shop_category_id = #{shopCategoryDO.shopCategoryId,jdbcType=INTEGER},
+            </if>
+            <if test="shopName != null">
+                shop_name = #{shopName,jdbcType=VARCHAR},
+            </if>
+            <if test="shopDesc != null">
+                shop_desc = #{shopDesc,jdbcType=VARCHAR},
+            </if>
+            <if test="shopAddr != null">
+                shop_addr = #{shopAddr,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="shopImg != null">
+                shop_img = #{shopImg,jdbcType=VARCHAR},
+            </if>
+            <if test="priority != null">
+                priority = #{priority,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastEditTime != null">
+                last_edit_time = #{lastEditTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="enableStatus != null">
+                enable_status = #{enableStatus,jdbcType=INTEGER},
+            </if>
+        </set>
+        where shop_id = #{shopId,jdbcType=INTEGER}
+    </update>
+
+    <select id="countShop" resultType="java.lang.Integer">
+        select count(s.shop_id)
+        from tb_shop s,
+             tb_area a,
+             tb_shop_category sc,
+             tb_user u
+        where s.area_id = a.area_id
+          and s.shop_category_id = sc.shop_category_id
+          and s.owner_id = u.user_id
+          and s.owner_id = #{userId}
+    </select>
+
+</mapper>

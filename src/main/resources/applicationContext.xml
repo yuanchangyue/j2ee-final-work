@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+    
+    <!--扫描包-->
+    <context:component-scan base-package="com.changyue.j2eefinal"/>
+
+    <context:property-placeholder location="classpath:/jdbc.properties"/>
+
+    <!--数据源-->
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+        <property name="driverClassName" value="${jdbc.driverClass}"/>
+        <property name="url" value="${jdbc.jdbcUrl}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxTotal" value="${jdbc.maxTotal}"/>
+        <property name="maxIdle" value="${jdbc.maxIdle}"/>
+        <property name="initialSize" value="${jdbc.initialSize}"/>
+    </bean>
+
+    <!--配置mybatis-->
+    <bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+    </bean>
+
+    <!--扫描dao-->
+    <bean id="mapperScan" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.changyue.j2eefinal.dao"/>
+    </bean>
+
+    <!--事务控制-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- 开启基于注解的事务 使用xml配置形式 -->
+    <aop:config>
+        <aop:pointcut id="tx" expression="execution(* com.changyue.j2eefinal.service..*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="tx"/>
+    </aop:config>
+
+    <!--事务增强 事务如何切入-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!-- 所有方法都是事务 -->
+            <tx:method name="*"/>
+            <!-- get开头 -->
+            <tx:method name="get*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 配置文件上传解析器 MultipartResolver -->
+    <bean id="multipartResolver" class=
+            "org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 设置请求编码格式-->
+        <property name="defaultEncoding" value="UTF-8"/>
+        <property name="maxUploadSize" value="20971520"/>
+        <property name="maxInMemorySize" value="20971520"/>
+    </bean>
+
+</beans>
